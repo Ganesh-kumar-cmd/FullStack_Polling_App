@@ -22,15 +22,17 @@ public class JwtTokenProvider {
     private int jwtExpirationInMs;
 
     public String generateToken(Authentication authentication) {
-
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        logger.info("JWT Token generated at: {}", now);
+        logger.info("JWT Token expires at: {}", expiryDate);
+
         return Jwts.builder()
                 .setSubject(Long.toString(userPrincipal.getId()))
-                .setIssuedAt(new Date())
+                .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
@@ -47,7 +49,11 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken).getBody();
+            Date now = new Date();
+            logger.info("Current time: {}", now);
+            logger.info("Token expiration time: {}", claims.getExpiration());
+
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");

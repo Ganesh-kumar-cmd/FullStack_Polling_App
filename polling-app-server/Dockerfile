@@ -1,17 +1,18 @@
-# Use an official Java runtime as a parent image
-FROM openjdk:8-jre-slim
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:11-jre-slim
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the executable JAR file to the working directory
-COPY target/polls-0.0.1-SNAPSHOT.jar /app/app.jar
+# Add the project JAR file to the container
+COPY target/polls-0.0.1-SNAPSHOT.jar app.jar
 
-# Copy the application.properties file (if needed, in case it's external)
-# COPY src/main/resources/application.properties /app/config/application.properties
+# Timezone setting
+RUN apt-get update && apt-get install -y tzdata
+ENV TZ=Etc/UTC
 
-# Make port 5000 available to the world outside this container
+# Expose port 5000
 EXPOSE 5000
 
 # Run the JAR file
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]

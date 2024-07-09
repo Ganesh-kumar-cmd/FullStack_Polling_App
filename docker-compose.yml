@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./polling-app-server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/polling_app
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      TZ: Etc/UTC
+
+    depends_on:
+      - mysql
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
+  frontend:
+    build:
+      context: ./polling-app-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      REACT_APP_API_BASE_URL: http://backend:5000/api
+      TZ: Etc/UTC
+    depends_on:
+      - backend
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: polling_app
+      TZ: Etc/UTC
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+
+volumes:
+  db_data:
